@@ -1,4 +1,8 @@
 package mx.edu.caidt.El_Mapache_Bigoton_api.usuario;
 
-public class UsuarioRepository {
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UsuarioRepository extends CrudRepository<Usuario, Long> {
 }
