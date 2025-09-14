@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @ToString
 @Entity
-@Table(name = "Usuario")
+@Table(name = "usuario")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,6 @@ public class Usuario {
     @Column(nullable = false, length = 45)
     private String contraseña;
 
-    @OneToMany(mappedBy = "Usuario", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<Cita> citas;
 }

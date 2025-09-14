@@ -14,7 +14,7 @@ import mx.edu.caidt.El_Mapache_Bigoton_api.cita.Cita;
 @Data
 @ToString
 @Entity
-@Table(name = "Cliente")
+@Table(name = "cliente")
 public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
