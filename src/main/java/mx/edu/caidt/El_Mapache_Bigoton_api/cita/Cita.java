@@ -21,7 +21,7 @@ import java.util.List;
 @Data
 @ToString
 @Entity
-@Table(name = "Cita")
+@Table(name = "cita")
 public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,11 +31,11 @@ public class Cita {
     @Column(nullable = false)
     private LocalTime hora;
 
-    @OneToMany(mappedBy = "Cita", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cita", cascade = CascadeType.ALL)
     private List<Servicio> servicios = new ArrayList<>();
 
-    @OneToOne(mappedBy = "Cita", cascade = CascadeType.ALL)
-    private Cliente clientes;
+    @OneToOne(mappedBy = "cita", cascade = CascadeType.ALL)
+    private Cliente cliente;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "idUsuario")
