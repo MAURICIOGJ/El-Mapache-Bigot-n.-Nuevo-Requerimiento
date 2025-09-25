@@ -1,4 +1,6 @@
 package mx.edu.caidt.El_Mapache_Bigoton_api.usuario;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -6,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import mx.edu.caidt.El_Mapache_Bigoton_api.cita.Cita;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,9 +24,10 @@ public class Usuario {
     private Long idUsuario;
     @Column(nullable = false, length = 45)
     private String nombre;
-    @Column(nullable = false, length = 45)
+    @Column(name = "contraseña", nullable = false, length = 45)
     private String contraseña;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Cita> citas;
+    //@JsonIgnoreProperties("usuario")
+    private List<Cita> cita = new ArrayList<>();
 }

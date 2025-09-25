@@ -1,21 +1,24 @@
 package mx.edu.caidt.El_Mapache_Bigoton_api.cita;
 
+import mx.edu.caidt.El_Mapache_Bigoton_api.Cita_Servicio.Cita_Servicio;
 import mx.edu.caidt.El_Mapache_Bigoton_api.cliente.Cliente;
 import mx.edu.caidt.El_Mapache_Bigoton_api.cliente.ClienteRepository;
-import mx.edu.caidt.El_Mapache_Bigoton_api.servicio.Servicio;
 import mx.edu.caidt.El_Mapache_Bigoton_api.usuario.Usuario;
 import mx.edu.caidt.El_Mapache_Bigoton_api.usuario.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
+
+@CrossOrigin(origins = {"http://localhost:5173"})
 @RestController
 @RequestMapping("/cita")
 public class CitaController {
+
     @Autowired
     private CitaRepository citaRepository;
     @Autowired
@@ -23,10 +26,14 @@ public class CitaController {
     @Autowired
     private ClienteRepository clienteRepository;
 
-
     @GetMapping()
     public ResponseEntity<Iterable<Cita>> findAll() {
         return ResponseEntity.ok(citaRepository.findAll());
+    }
+
+    @GetMapping("/usuario/{id}/citas")
+    public List<Cita> getCitasPorUsuario(@PathVariable Long id) {
+        return citaRepository.findByUsuarioIdUsuario(id);
     }
 
     @GetMapping("/{idCita}")
@@ -37,18 +44,21 @@ public class CitaController {
         }else{
             return ResponseEntity.notFound().build();
         }
+
     }
 
+    // Crear nueva cita
     @PostMapping
     public ResponseEntity<Cita> create(@RequestBody Cita cita, UriComponentsBuilder uriBuilder) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(cita.getUsuario().getIdUsuario());
-        if (!usuarioOptional.isPresent()) {
-            return ResponseEntity.unprocessableEntity().build();
-        }
         Optional<Cliente> clienteOptional = clienteRepository.findById(cita.getCliente().getIdCliente());
-        if (!clienteOptional.isPresent()) {
+        if (clienteOptional.isPresent()) {
             return ResponseEntity.unprocessableEntity().build();
         }
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(cita.getUsuario().getIdUsuario());
+        if (usuarioOptional.isPresent()) {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+
         cita.setCliente(clienteOptional.get());
         cita.setUsuario(usuarioOptional.get());
         Cita created = citaRepository.save(cita);
@@ -56,44 +66,49 @@ public class CitaController {
         return ResponseEntity.created(uri).body(created);
     }
 
+    // Actualizar cita
     @PutMapping("/{idCita}")
     public ResponseEntity<Void> update(@PathVariable Long idCita, @RequestBody Cita cita) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(cita.getUsuario().getIdUsuario());
         Optional<Cliente> clienteOptional = clienteRepository.findById(cita.getCliente().getIdCliente());
-
-        if (!usuarioOptional.isPresent() || !clienteOptional.isPresent()) {
+        if (clienteOptional.isPresent()) {
             return ResponseEntity.unprocessableEntity().build();
         }
-        Cita citaAnterior = citaRepository.findById(idCita).get();
-        if(citaAnterior !=null) {
-            cita.setUsuario(usuarioOptional.get());
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(cita.getUsuario().getIdUsuario());
+        if (usuarioOptional.isPresent()) {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+        Cita citaanterior = citaRepository.save(cita);
+        if(citaanterior!=null){
             cita.setCliente(clienteOptional.get());
-            cita.setIdCita(citaAnterior.getIdCita());
+            cita.setUsuario(usuarioOptional.get());
+            cita.setIdCita(citaanterior.getIdCita());
             citaRepository.save(cita);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+
     }
 
+    // Eliminar cita
     @DeleteMapping("/{idCita}")
     public ResponseEntity<Void> delete(@PathVariable Long idCita) {
-        if(citaRepository.findById(idCita).isPresent()) {
+        if (citaRepository.findById(idCita).isPresent()) {
             citaRepository.deleteById(idCita);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
 
-    //obtener los servicios de una cita
+    // Obtener servicios de una cita
     @GetMapping("/servicios/{idCita}")
-    public ResponseEntity<Iterable<Servicio>> tServicio(@PathVariable Long idCita) {
+    public ResponseEntity<Iterable<Cita_Servicio>>tCitaServicios(@PathVariable Long idCita) {
         Optional<Cita> citaOptional = citaRepository.findById(idCita);
         if (citaOptional.isPresent()) {
-            return ResponseEntity.ok(citaOptional.get().getServicios());
+            return ResponseEntity.ok(citaOptional.get().getCitaServicios());
 
         }
         return ResponseEntity.notFound().build();
     }
 
-
 }
+
