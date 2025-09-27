@@ -22,7 +22,7 @@ hora time
 CREATE TABLE usuario(
 id_usuario bigint,
 nombre Varchar(45),
-contraseña Varchar(45),
+contraseña Varchar(45)
 );
 
 
