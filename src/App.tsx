@@ -1,5 +1,5 @@
 import { PrimeReactProvider } from 'primereact/api';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import Login from './Components/Login';
 import Principal from './Components/Principal';
@@ -7,11 +7,10 @@ import Menu from './Components/Menu';
 import CitasProgramadas from './Components/CitasProgramadas';
 import Usuario from './Components/Usuario';
 import Servicio from './Components/Servicio';
-//import Servicios from './Components/Servicios';
-//import Usuarios from './Components/Usuarios';
 
 function AppContent() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Ocultar menú en Login y Principal
   const hideMenu = location.pathname === '/' || location.pathname === '/login';
@@ -22,7 +21,7 @@ function AppContent() {
       {!hideMenu && (
         <Menu
           onNavigate={(route) => {
-            console.log(`Navegar a: ${route}`);
+            navigate(route); // 👈 ahora sí navega
           }}
         />
       )}

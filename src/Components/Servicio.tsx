@@ -75,11 +75,12 @@ export default function Servicio() {
     const getIdServicio = async (_servicio: Servicio) => {
         let idServicio = 0;
         await ServiciosService.create({
-            nombre: _servicio.descripcion,
+            descripcion: _servicio.descripcion,  
             costo: _servicio.costo
-        }).then((response) => {
-            idServicio = response.data.idServicio;
-        });
+        })
+            .then((response) => {
+                idServicio = response.data.idServicio;
+            });
         return idServicio;
     };
 
@@ -151,12 +152,22 @@ export default function Servicio() {
 
             <Dialog visible={servicioDialog} style={{ width: "450px" }} header="Detalles del Servicio" modal footer={servicioDialogFooter} onHide={hideDialog}>
                 <div className="field">
-                    <label htmlFor="descripción">Descripción</label>
-                    <InputText id="descripción" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} required autoFocus className={submitted && !servicio.descripcion? "p-invalid" : ""} />
-                    {submitted && !servicio.descripcion&& <small className="p-invalid">La descripción es obligatorio.</small>}
+                    <label htmlFor="descripcion">Descripción</label>
+                    <InputText
+                        id="descripcion"   // <-- sin tilde
+                        value={servicio.descripcion}
+                        onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })}
+                        required
+                        autoFocus
+                        className={submitted && !servicio.descripcion ? "p-invalid" : ""}
+                    />
+                    {submitted && !servicio.descripcion && (
+                        <small className="p-invalid">La descripción es obligatoria.</small>
+                    )}
                 </div>
-                
-                
+
+
+
                 <div className="field">
                     <label htmlFor="costo">Costo</label>
                     <InputNumber id="costo" value={servicio.costo} onValueChange={(e) => setServicio({ ...servicio, costo: e.value || 0 })} mode="currency" currency="USD" locale="en-US" className={submitted && servicio.costo <= 0 ? "p-invalid" : ""} />

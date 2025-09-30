@@ -66,21 +66,21 @@ const Menu: React.FC<MenuProps> = ({ onNavigate }) => {
 
         {/* Menú */}
         <List>
-          <ListItem component="button" onClick={() => onNavigate("Citas")}>
+          <ListItem component="button" onClick={() => onNavigate("/citasprogramadas")}>
             <ListItemIcon>
               <EventIcon />
             </ListItemIcon>
-            <ListItemText primary="Citas" />
+            <ListItemText primary="Citas Programadas" />
           </ListItem>
 
-          <ListItem component="button" onClick={() => onNavigate("Usarios")}>
+          <ListItem component="button" onClick={() => onNavigate("/usuarios")}>
             <ListItemIcon>
               <PeopleIcon />
             </ListItemIcon>
             <ListItemText primary="Usuarios" />
           </ListItem>
 
-          <ListItem component="button" onClick={() => onNavigate("Servicios")}>
+          <ListItem component="button" onClick={() => onNavigate("/servicios")}>
             <ListItemIcon>
               <InfoIcon />
             </ListItemIcon>
@@ -89,7 +89,7 @@ const Menu: React.FC<MenuProps> = ({ onNavigate }) => {
 
           <Divider />
 
-          <ListItem component="button" onClick={() => onNavigate("CerrarSesion")}>
+          <ListItem component="button" onClick={() => onNavigate("/login")}>
             <ListItemIcon>
               <ExitToAppIcon />
             </ListItemIcon>
@@ -102,3 +102,4 @@ const Menu: React.FC<MenuProps> = ({ onNavigate }) => {
 };
 
 export default Menu;
+
