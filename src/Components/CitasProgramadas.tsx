@@ -36,7 +36,6 @@ const CitasProgramadas = () => {
         const data = await obtenerCitasProgramadas();
         setCitas(data);
 
-        // Generar lista de servicios únicos para el MultiSelect
         const servicios = data.flatMap((cita: { servicios: string[]; precios: number[] }) =>
             cita.servicios.map((s: string, index: number) => ({
                 label: s,
@@ -63,29 +62,38 @@ const CitasProgramadas = () => {
     };
 
     const editarCita = (cita: any) => {
-        setCitaSeleccionada({ ...cita });
+        const servicios = cita.citaServicios?.map((s: any) => s.servicio.descripcion) || cita.servicios || [];
+        setCitaSeleccionada({
+            ...cita,
+            servicio: servicios,
+            precio: cita.precioTotal || 0,
+        });
         setMostrarDialogo(true);
     };
 
     const guardarCita = async () => {
+        const citaData = {
+            fecha: citaSeleccionada.fecha,
+            hora: citaSeleccionada.hora,
+            precioTotal: citaSeleccionada.precio,
+            citaServicios: citaSeleccionada.servicio.map((servicio: string) => ({
+                servicio: { descripcion: servicio },
+            })),
+        };
+
         if (citaSeleccionada.idCita) {
-            // actualizar cita existente
-            await actualizarCita(citaSeleccionada);
+            await actualizarCita({
+                idCita: citaSeleccionada.idCita,
+                idCliente: citaSeleccionada.idCliente,
+                nombre: citaSeleccionada.nombre,
+                telefono: citaSeleccionada.telefono,
+                ...citaData,
+            });
         } else {
-            // crear nueva cita
             const clienteData = {
                 nombre: citaSeleccionada.nombre,
                 telefono: citaSeleccionada.telefono,
             };
-
-            const citaData = {
-                fecha: citaSeleccionada.fecha,
-                hora: citaSeleccionada.hora,
-                citaServicios: citaSeleccionada.servicio.map((servicio: string) => ({
-                    servicio: { descripcion: servicio },
-                })),
-            };
-
             await crearCita(clienteData, citaData);
         }
 
@@ -95,12 +103,11 @@ const CitasProgramadas = () => {
 
     const borrarCita = async (cita: any) => {
         if (window.confirm("¿Deseas eliminar esta cita?")) {
-            await eliminarCita(cita.idCliente); // eliminamos cliente asociado
+            await eliminarCita(cita.idCita);
             fetchCitas();
         }
     };
 
-    // Recalcular precio cuando cambien los servicios seleccionados
     const handleServicioChange = (e: any) => {
         const seleccion = e.value;
         const total = seleccion.reduce((acc: number, servicio: string) => {
@@ -131,16 +138,15 @@ const CitasProgramadas = () => {
             <h2 className="text-xl mb-4">Citas Programadas</h2>
 
             <DataTable value={citas} paginator rows={5} responsiveLayout="scroll">
-                <Column field="nombre" header="Nombre"></Column>
-                <Column field="telefono" header="Teléfono"></Column>
+                <Column field="nombre" header="Nombre" />
+                <Column field="telefono" header="Teléfono" />
                 <Column
                     header="Servicios"
                     body={(rowData) => rowData.servicios.join(", ")}
                 />
-                <Column field="fecha" header="Fecha"></Column>
-                <Column field="hora" header="Hora"></Column>
+                <Column field="fecha" header="Fecha" />
+                <Column field="hora" header="Hora" />
                 <Column field="precioTotal" header="Total" />
-
                 <Column
                     body={(rowData) => (
                         <div className="flex gap-2">
@@ -170,7 +176,6 @@ const CitasProgramadas = () => {
                 footer={footerDialog}
                 style={{ width: "32rem" }}
             >
-                {/* Nombre */}
                 <div className="field flex align-items-center">
                     <i className="pi pi-user mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="nombre">Nombre</label>
@@ -187,7 +192,6 @@ const CitasProgramadas = () => {
                     />
                 </div>
 
-                {/* Teléfono */}
                 <div className="field flex align-items-center">
                     <i className="pi pi-phone mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="telefono">Teléfono</label>
@@ -204,7 +208,6 @@ const CitasProgramadas = () => {
                     />
                 </div>
 
-                {/* Fecha */}
                 <div className="field flex align-items-center">
                     <i className="pi pi-calendar mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="fecha" className="mr-2">Fecha</label>
@@ -221,7 +224,6 @@ const CitasProgramadas = () => {
                     />
                 </div>
 
-                {/* Hora */}
                 <div className="field flex align-items-center mt-3">
                     <i className="pi pi-clock mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="hora" className="mr-2">Hora</label>
@@ -239,7 +241,6 @@ const CitasProgramadas = () => {
                     />
                 </div>
 
-                {/* Servicios */}
                 <div className="field flex align-items-center">
                     <i className="pi pi-users mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="servicios">Servicios</label>
@@ -253,7 +254,6 @@ const CitasProgramadas = () => {
                     />
                 </div>
 
-                {/* Precio */}
                 <div className="field flex align-items-center">
                     <i className="pi pi-dollar mr-2" style={{ fontSize: "1.5rem" }}></i>
                     <label htmlFor="precio">Precio</label>
@@ -267,8 +267,10 @@ const CitasProgramadas = () => {
                     />
                 </div>
             </Dialog>
-        </div>
+            </div>
     );
 };
 
 export default CitasProgramadas;
+
+       
