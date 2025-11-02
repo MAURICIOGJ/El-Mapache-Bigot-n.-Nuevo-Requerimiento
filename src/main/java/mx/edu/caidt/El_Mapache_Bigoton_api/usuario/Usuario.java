@@ -1,4 +1,5 @@
 package mx.edu.caidt.El_Mapache_Bigoton_api.usuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -27,7 +28,7 @@ public class Usuario {
     @Column(name = "contraseña", nullable = false, length = 45)
     private String contraseña;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    //@JsonIgnoreProperties("usuario")
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY) // QUITAMOS CASCADE
+    @JsonIgnore
     private List<Cita> cita = new ArrayList<>();
 }

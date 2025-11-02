@@ -1,11 +1,11 @@
 package mx.edu.caidt.El_Mapache_Bigoton_api.cliente;
 
-import mx.edu.caidt.El_Mapache_Bigoton_api.Cita_Servicio.Cita_Servicio;
-import mx.edu.caidt.El_Mapache_Bigoton_api.cita.Cita;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+
 import java.net.URI;
 import java.util.Optional;
 
@@ -16,6 +16,7 @@ public class ClienteController {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
     @GetMapping()
     public ResponseEntity<Iterable<Cliente>> findAll() {
         return ResponseEntity.ok(clienteRepository.findAll());
@@ -24,53 +25,89 @@ public class ClienteController {
     @GetMapping("/{idCliente}")
     public ResponseEntity<Cliente> findById(@PathVariable Long idCliente) {
         Optional<Cliente> clienteOptional = clienteRepository.findById(idCliente);
-        if (clienteOptional.isPresent()) {
-            return ResponseEntity.ok(clienteOptional.get());
-        }else{
-            return ResponseEntity.notFound().build();
-        }
-
+        return clienteOptional.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear nueva cita
     @PostMapping
-    public ResponseEntity<Cliente> create(@RequestBody Cliente cliente, UriComponentsBuilder uriBuilder) {
-        Cliente created = clienteRepository.save(cliente);
-        URI uri = uriBuilder.path("cliente/{idCliente}").buildAndExpand(created.getIdCliente()).toUri();
-        return ResponseEntity.created(uri).body(created);
+    public ResponseEntity<Cliente> create(@RequestBody ClienteUpdateDTO clienteDTO, UriComponentsBuilder uriBuilder) {
+        try {
+            // Crear nuevo cliente desde DTO
+            Cliente nuevoCliente = new Cliente();
+            nuevoCliente.setNombre(clienteDTO.nombre().trim());
+            nuevoCliente.setTelefono(clienteDTO.telefono().trim());
+
+            Cliente created = clienteRepository.save(nuevoCliente);
+
+            URI uri = uriBuilder.path("/cliente/{idCliente}")
+                    .buildAndExpand(created.getIdCliente())
+                    .toUri();
+
+            return ResponseEntity.created(uri).body(created);
+        } catch (Exception e) {
+            System.err.println("❌ Error al crear cliente: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    // Actualizar cita
     @PutMapping("/{idCliente}")
-    public ResponseEntity<Void> update(@PathVariable Long idCita, @RequestBody Cliente cliente) {
-        Cliente clienteanterior = clienteRepository.save(cliente);
-        if(clienteanterior!=null){
-            cliente.setIdCliente(clienteanterior.getIdCliente());
-            clienteRepository.save(cliente);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Cliente> update(@PathVariable Long idCliente, @RequestBody ClienteUpdateDTO clienteDTO) {
+        System.out.println("========================================");
+        System.out.println("📝 PUT /cliente/" + idCliente);
+        System.out.println("DTO recibido: " + clienteDTO);
 
+        try {
+            Optional<Cliente> clienteOptional = clienteRepository.findById(idCliente);
+
+            if (clienteOptional.isEmpty()) {
+                System.err.println("❌ Cliente no encontrado: " + idCliente);
+                return ResponseEntity.notFound().build();
+            }
+
+            Cliente clienteExistente = clienteOptional.get();
+
+            // Actualizar solo nombre y teléfono
+            if (clienteDTO.nombre() != null && !clienteDTO.nombre().trim().isEmpty()) {
+                clienteExistente.setNombre(clienteDTO.nombre().trim());
+            }
+
+            if (clienteDTO.telefono() != null && !clienteDTO.telefono().trim().isEmpty()) {
+                clienteExistente.setTelefono(clienteDTO.telefono().trim());
+            }
+
+            // Guardar solo el cliente, JPA no tocará las citas por ausencia de cascade
+            Cliente updated = clienteRepository.save(clienteExistente);
+
+            System.out.println("✅ Cliente actualizado: " + updated.getIdCliente());
+            System.out.println("========================================");
+
+            return ResponseEntity.ok(updated);
+
+        } catch (Exception e) {
+            System.err.println("❌ ERROR CRÍTICO al actualizar cliente " + idCliente);
+            System.err.println("Mensaje: " + e.getMessage());
+            System.err.println("Tipo: " + e.getClass().getName());
+            e.printStackTrace();
+            System.err.println("========================================");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-    // Eliminar cita
     @DeleteMapping("/{idCliente}")
-    public ResponseEntity<Void> delete(@PathVariable Long idCita) {
-        if (clienteRepository.findById(idCita).isPresent()) {
-            clienteRepository.deleteById(idCita);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
+    public ResponseEntity<Void> delete(@PathVariable Long idCliente) {
+        try {
+            if (!clienteRepository.existsById(idCliente)) {
+                return ResponseEntity.notFound().build();
+            }
 
-    // Obtener la cita de un cliente
-    @GetMapping("/cita/{idCliente}")
-    public ResponseEntity<Iterable<Cita>> tCitas(@PathVariable Long idCliente) {
-        Optional<Cliente> clienteOptional = clienteRepository.findById(idCliente);
-        if (clienteOptional.isPresent()) {
-            return ResponseEntity.ok(clienteOptional.get().getCita());
+            clienteRepository.deleteById(idCliente);
+            return ResponseEntity.noContent().build();
+
+        } catch (Exception e) {
+            System.err.println("❌ Error al eliminar cliente: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.notFound().build();
     }
 }
-
