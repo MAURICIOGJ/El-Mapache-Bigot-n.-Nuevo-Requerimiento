@@ -11,6 +11,7 @@ import mx.edu.caidt.El_Mapache_Bigoton_api.cliente.Cliente;
 import mx.edu.caidt.El_Mapache_Bigoton_api.usuario.Usuario;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,15 @@ public class Cita {
 
     @Column(name = "hora", nullable = false)
     private LocalTime hora;
+
+    @Column(name = "estado", length = 20)
+    private String estado = "PROGRAMADA"; // PROGRAMADA, COMPLETADA, CANCELADA
+
+    @Column(name = "motivo_cancelacion", length = 255)
+    private String motivoCancelacion;
+
+    @Column(name = "fecha_completada")
+    private LocalDateTime fechaCompletada;
 
     @OneToMany(mappedBy = "cita", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

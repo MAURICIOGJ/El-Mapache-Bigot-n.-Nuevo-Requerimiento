@@ -1,105 +1,79 @@
-import React from "react";
-import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  Typography,
-  Divider,
-  Box,
-  IconButton,
-} from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import EventIcon from "@mui/icons-material/Event";
-import PeopleIcon from "@mui/icons-material/People";
-import InfoIcon from "@mui/icons-material/Info";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { Link, useNavigate } from 'react-router-dom';
 
-type MenuProps = {
-  onNavigate: (route: string) => void;
-};
+interface MenuProps {
+  onLogout: () => void;
+}
 
-const Menu: React.FC<MenuProps> = ({ onNavigate }) => {
-  const [open, setOpen] = React.useState(false);
+function Menu({ onLogout }: MenuProps) {
+  const navigate = useNavigate();
 
-  const toggleDrawer = () => {
-    setOpen(!open);
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
   };
 
   return (
-    <>
-      {/* Botón para abrir el menú */}
-      <IconButton
-        color="inherit"
-        onClick={toggleDrawer}
-        sx={{ position: "fixed", top: 10, left: 10, zIndex: 2000 }}
-      >
-        <MenuIcon />
-      </IconButton>
+    <div className="fixed left-0 top-0 h-screen w-64 bg-gray-800 text-white flex flex-col">
+      <div className="p-6 border-b border-gray-700">
+        <h1 className="text-2xl font-bold">🧔 Mapache Bigotón</h1>
+        <p className="text-sm text-gray-400">Sistema de Citas</p>
+      </div>
 
-      <Drawer
-        variant="temporary"
-        open={open}
-        onClose={toggleDrawer}
-        sx={{
-          "& .MuiDrawer-paper": { width: 240, boxSizing: "border-box" },
-        }}
-      >
-        {/* Header con usuario */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            bgcolor: "grey.600",
-            color: "white",
-            p: 2,
-          }}
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          <li>
+            <Link
+              to="/"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              🏠 Inicio
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/citas"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              📅 Citas Programadas
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/historial"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              📋 Historial de Citas
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/usuarios"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              👥 Usuarios (Barberos)
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/servicios"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              ✂️ Servicios
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="w-full bg-red-500 hover:bg-red-600 px-4 py-3 rounded transition"
         >
-          <Avatar sx={{ bgcolor: "white", color: "grey.600", mb: 1 }}>MB</Avatar>
-          <Typography variant="subtitle1">El Mapache Bigotón</Typography>
-        </Box>
-
-        <Divider />
-
-        {/* Menú */}
-        <List>
-          <ListItem component="button" onClick={() => onNavigate("/citasprogramadas")}>
-            <ListItemIcon>
-              <EventIcon />
-            </ListItemIcon>
-            <ListItemText primary="Citas Programadas" />
-          </ListItem>
-
-          <ListItem component="button" onClick={() => onNavigate("/usuarios")}>
-            <ListItemIcon>
-              <PeopleIcon />
-            </ListItemIcon>
-            <ListItemText primary="Usuarios" />
-          </ListItem>
-
-          <ListItem component="button" onClick={() => onNavigate("/servicios")}>
-            <ListItemIcon>
-              <InfoIcon />
-            </ListItemIcon>
-            <ListItemText primary="Servicios" />
-          </ListItem>
-
-          <Divider />
-
-          <ListItem component="button" onClick={() => onNavigate("/login")}>
-            <ListItemIcon>
-              <ExitToAppIcon />
-            </ListItemIcon>
-            <ListItemText primary="Cerrar sesión" />
-          </ListItem>
-        </List>
-      </Drawer>
-    </>
+          🚪 Cerrar Sesión
+        </button>
+      </div>
+    </div>
   );
-};
+}
 
 export default Menu;
-

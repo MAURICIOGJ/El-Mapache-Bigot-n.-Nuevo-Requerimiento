@@ -156,15 +156,8 @@ export const crearCita = async (
   serviciosSeleccionados: number[] = []
 ) => {
   try {
-    console.log("📝 ===== CREANDO CITA =====");
-    console.log("Cliente:", clienteData);
-    console.log("Cita:", citaData);
-    console.log("ID Barbero:", idBarbero);
-    console.log("Servicios:", serviciosSeleccionados);
-
     const resCliente = await axios.post(API_CLIENTE, clienteData);
     const clienteCreado = resCliente.data;
-    console.log("✅ Cliente creado:", clienteCreado);
 
     const citaDTO = {
       fecha: citaData.fecha,
@@ -174,17 +167,11 @@ export const crearCita = async (
       idServicios: serviciosSeleccionados
     };
 
-    console.log("📤 Enviando al backend:", citaDTO);
-
     const resCita = await axios.post(API_CITA, citaDTO);
-    console.log("✅ Cita creada:", resCita.data);
-
+    console.log("✅ Cita creada");
     return resCita.data;
   } catch (error: any) {
-    console.error("❌ ===== ERROR AL CREAR CITA =====");
-    console.error("Status:", error.response?.status);
-    console.error("Data:", error.response?.data);
-    console.error("Mensaje:", error.message);
+    console.error("❌ Error al crear la cita:", error);
     throw error;
   }
 };

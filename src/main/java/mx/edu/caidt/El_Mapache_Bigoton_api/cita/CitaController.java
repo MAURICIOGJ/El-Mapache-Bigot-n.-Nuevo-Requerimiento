@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,24 +34,33 @@ public class CitaController {
     @Autowired
     private Cita_ServicioRepository citaServicioRepository;
 
-    private static final Long ID_BARBERO_FIJO = 1L;
-
-
     @GetMapping("/test")
     public ResponseEntity<String> test() {
-        return ResponseEntity.ok("✅ Servidor funcionando correctamente");
+        return ResponseEntity.ok("✅ Servidor funcionando");
     }
 
-    @PostMapping("/test-dto")
-    public ResponseEntity<String> testDTO(@RequestBody String rawBody) {
-        System.out.println("📦 RAW BODY RECIBIDO:");
-        System.out.println(rawBody);
-        return ResponseEntity.ok("Datos recibidos: " + rawBody);
-    }
-
+    /**
+     * Obtener SOLO citas programadas ordenadas por fecha/hora
+     */
     @GetMapping()
     public ResponseEntity<Iterable<Cita>> findAll() {
-        return ResponseEntity.ok(citaRepository.findAllWithEagerRelationships());
+        return ResponseEntity.ok(citaRepository.findCitasProgramadasOrdenadas());
+    }
+
+    /**
+     * Obtener historial de citas COMPLETADAS
+     */
+    @GetMapping("/completadas")
+    public ResponseEntity<List<Cita>> getCitasCompletadas() {
+        return ResponseEntity.ok(citaRepository.findCitasCompletadas());
+    }
+
+    /**
+     * Obtener citas CANCELADAS
+     */
+    @GetMapping("/canceladas")
+    public ResponseEntity<List<Cita>> getCitasCanceladas() {
+        return ResponseEntity.ok(citaRepository.findCitasCanceladas());
     }
 
     @GetMapping("/usuario/{id}/citas")
@@ -65,21 +75,14 @@ public class CitaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
+    /**
+     * Crear nueva cita (siempre estado PROGRAMADA)
+     */
     @PostMapping
     public ResponseEntity<Cita> create(@RequestBody CitaCreationDTO citaDTO, UriComponentsBuilder uriBuilder) {
-        // LOG: Ver qué está llegando
-        System.out.println("========================================");
-        System.out.println("📥 RECIBIENDO PETICIÓN POST /cita");
-        System.out.println("DTO recibido: " + citaDTO);
-        System.out.println("Fecha: " + citaDTO.fecha());
-        System.out.println("Hora: " + citaDTO.hora());
-        System.out.println("ID Cliente: " + citaDTO.idCliente());
-        System.out.println("ID Servicios: " + citaDTO.idServicios());
-        System.out.println("========================================");
+        System.out.println("📥 POST /cita - " + citaDTO);
 
         if (citaDTO.idCliente() == null) {
-            System.err.println("❌ ERROR: idCliente es null");
             return ResponseEntity.badRequest().body(null);
         }
         Optional<Cliente> clienteOptional = clienteRepository.findById(citaDTO.idCliente());
@@ -87,10 +90,10 @@ public class CitaController {
             return ResponseEntity.unprocessableEntity().body(null);
         }
 
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(ID_BARBERO_FIJO);
+        Long idBarbero = citaDTO.idUsuario() != null ? citaDTO.idUsuario() : 1L;
+        Optional<Usuario> usuarioOptional = usuarioRepository.findById(idBarbero);
         if (usuarioOptional.isEmpty()) {
-            System.err.println("ERROR: El Barbero con ID " + ID_BARBERO_FIJO + " no existe.");
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.unprocessableEntity().body(null);
         }
 
         Cita cita = new Cita();
@@ -98,36 +101,32 @@ public class CitaController {
         cita.setHora(citaDTO.hora());
         cita.setCliente(clienteOptional.get());
         cita.setUsuario(usuarioOptional.get());
+        cita.setEstado("PROGRAMADA");
 
         Cita citaGuardada = citaRepository.save(cita);
 
-        // Guardar relaciones Cita-Servicio
         if (citaDTO.idServicios() != null && !citaDTO.idServicios().isEmpty()) {
             guardarServiciosDeCita(citaGuardada, citaDTO.idServicios());
         }
 
+        System.out.println("✅ Cita creada: " + citaGuardada.getIdCita());
         URI uri = uriBuilder.path("cita/{idCita}").buildAndExpand(citaGuardada.getIdCita()).toUri();
         return ResponseEntity.created(uri).body(citaGuardada);
     }
 
-    /**
-     * Actualizar cita usando DTO
-     */
     @PutMapping("/{idCita}")
     public ResponseEntity<Void> update(@PathVariable Long idCita, @RequestBody CitaCreationDTO citaDTO) {
-        // Verificar si la cita existe
+        System.out.println("📝 PUT /cita/" + idCita);
+
         Optional<Cita> citaOptional = citaRepository.findById(idCita);
         if (citaOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Cita citaExistente = citaOptional.get();
-
-        // Actualizar fecha y hora
         citaExistente.setFecha(citaDTO.fecha());
         citaExistente.setHora(citaDTO.hora());
 
-        // Actualizar cliente si viene en el DTO
         if (citaDTO.idCliente() != null) {
             Optional<Cliente> clienteOpt = clienteRepository.findById(citaDTO.idCliente());
             if (clienteOpt.isEmpty()) {
@@ -136,65 +135,88 @@ public class CitaController {
             citaExistente.setCliente(clienteOpt.get());
         }
 
-        // Mantener o actualizar barbero
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(ID_BARBERO_FIJO);
-        if (usuarioOptional.isEmpty()) {
-            return ResponseEntity.internalServerError().build();
+        if (citaDTO.idUsuario() != null) {
+            Optional<Usuario> usuarioOptional = usuarioRepository.findById(citaDTO.idUsuario());
+            if (usuarioOptional.isEmpty()) {
+                return ResponseEntity.unprocessableEntity().build();
+            }
+            citaExistente.setUsuario(usuarioOptional.get());
         }
-        citaExistente.setUsuario(usuarioOptional.get());
 
-        // Guardar cita actualizada
         citaRepository.save(citaExistente);
 
-        // Actualizar servicios si se enviaron
         if (citaDTO.idServicios() != null) {
-            // Eliminar relaciones anteriores usando el nuevo método
             citaServicioRepository.deleteByCitaIdCita(idCita);
-
-            // Crear nuevas relaciones
             guardarServiciosDeCita(citaExistente, citaDTO.idServicios());
         }
+
+        System.out.println("✅ Cita actualizada");
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * MARCAR CITA COMO COMPLETADA
+     */
+    @PutMapping("/{idCita}/completar")
+    public ResponseEntity<Void> completarCita(@PathVariable Long idCita) {
+        System.out.println("✅ Completando cita: " + idCita);
+
+        Optional<Cita> citaOptional = citaRepository.findById(idCita);
+        if (citaOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Cita cita = citaOptional.get();
+        cita.setEstado("COMPLETADA");
+        cita.setFechaCompletada(LocalDateTime.now());
+        citaRepository.save(cita);
 
         return ResponseEntity.ok().build();
     }
 
     /**
-     * Eliminar cita (elimina automáticamente las relaciones Cita-Servicio por CASCADE)
+     * MARCAR CITA COMO CANCELADA (con motivo)
+     */
+    @PutMapping("/{idCita}/cancelar")
+    public ResponseEntity<Void> cancelarCita(@PathVariable Long idCita, @RequestBody String motivo) {
+        System.out.println("❌ Cancelando cita: " + idCita + " - Motivo: " + motivo);
+
+        Optional<Cita> citaOptional = citaRepository.findById(idCita);
+        if (citaOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Cita cita = citaOptional.get();
+        cita.setEstado("CANCELADA");
+        cita.setMotivoCancelacion(motivo);
+        cita.setFechaCompletada(LocalDateTime.now());
+        citaRepository.save(cita);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * ELIMINAR permanentemente (solo si es necesario)
      */
     @DeleteMapping("/{idCita}")
     public ResponseEntity<Void> delete(@PathVariable Long idCita) {
-        System.out.println("========================================");
         System.out.println("🗑️ DELETE /cita/" + idCita);
 
         try {
-            Optional<Cita> citaOptional = citaRepository.findById(idCita);
-
-            if (citaOptional.isEmpty()) {
-                System.err.println("❌ Cita no encontrada: " + idCita);
+            if (citaRepository.findById(idCita).isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Debido a cascade = CascadeType.ALL en la entidad Cita,
-            // esto eliminará automáticamente los registros en cita_servicio
             citaRepository.deleteById(idCita);
-
-            System.out.println("✅ Cita eliminada correctamente: " + idCita);
-            System.out.println("========================================");
+            System.out.println("✅ Cita eliminada permanentemente");
             return ResponseEntity.noContent().build();
 
         } catch (Exception e) {
-            System.err.println("❌ ERROR al eliminar cita " + idCita);
-            System.err.println("Mensaje: " + e.getMessage());
-            System.err.println("Tipo: " + e.getClass().getName());
-            e.printStackTrace();
-            System.err.println("========================================");
+            System.err.println("❌ ERROR: " + e.getMessage());
             return ResponseEntity.status(500).build();
         }
     }
 
-    /**
-     * Obtener servicios de una cita
-     */
     @GetMapping("/servicios/{idCita}")
     public ResponseEntity<Iterable<Cita_Servicio>> getCitaServicios(@PathVariable Long idCita) {
         Optional<Cita> citaOptional = citaRepository.findById(idCita);
@@ -206,9 +228,6 @@ public class CitaController {
         return ResponseEntity.ok(citaServicios);
     }
 
-    /**
-     * Método auxiliar para guardar las relaciones Cita-Servicio
-     */
     private void guardarServiciosDeCita(Cita cita, List<Long> idServicios) {
         for (Long idServicio : idServicios) {
             Optional<Servicio> servicioOpt = servicioRepository.findById(idServicio);

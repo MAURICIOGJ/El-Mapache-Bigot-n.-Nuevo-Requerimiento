@@ -1,86 +1,84 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { InputText } from "primereact/inputtext";
-import { Password } from "primereact/password";
-import { Button } from "primereact/button";
-import { loginUsuario } from "../Services/LoginService";
-import mapache from '../assets/mapache.png';
+import { loginUsuario } from "../Services/authService";
 
-import "primereact/resources/themes/lara-light-indigo/theme.css";
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
+interface LoginProps {
+  onLogin: () => void;
+}
 
-const Login = () => {
-    const [nombre, setNombre] = useState("");       
-    const [contraseña, setContraseña] = useState("");
-    const [error, setError] = useState("");
-    const navigate = useNavigate();
+function Login({ onLogin }: LoginProps) {
+  const [nombre, setNombre] = useState("");
+  const [contraseña, setContraseña] = useState("");
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
 
-    const handleLogin = async () => {
-        setError("");
-        try {
-            const usuario = await loginUsuario(nombre, contraseña);
-            console.log("Usuario logueado:", usuario);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setCargando(true);
 
-            // Guardar en localStorage
-            localStorage.setItem("usuario", JSON.stringify(usuario));
+    try {
+      const usuario = await loginUsuario(nombre, contraseña);
+      localStorage.setItem("usuario", JSON.stringify(usuario));
+      onLogin();
+    } catch (err) {
+      setError("Usuario o contraseña incorrectos");
+    } finally {
+      setCargando(false);
+    }
+  };
 
-            // Redirigir solo si el login fue correcto
-            navigate("/citasprogramadas");
-        } catch (err: any) {
-            if (err.response && err.response.status === 401) {
-                setError("Usuario o contraseña incorrectos");
-            } else {
-                setError("Error al conectarse al servidor");
-            }
-        }
-    };
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          🧔 Mapache Bigotón
+        </h1>
+        <h2 className="text-xl text-center mb-6 text-gray-600">
+          Iniciar Sesión
+        </h2>
 
-    return (
-        <div style={{
-            width: '300px',
-            margin: '100px auto',
-            textAlign: 'center',
-            border: '1px solid #ccc',
-            padding: '20px',
-            borderRadius: '8px'
-        }}>
-            <div style={{ marginBottom: '20px' }}>
-                <img src={mapache} alt="Logo" style={{ width: '100%', marginBottom: '20px' }} />
-            </div>
-
-            <div className="p-field" style={{ marginBottom: '15px' }}>
-                <InputText
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Ingresar usuario"
-                    style={{ width: '100%' }}
-                />
-            </div>
-
-            <div className="p-field" style={{ marginBottom: '20px' }}>
-                <Password
-                    value={contraseña}
-                    onChange={(e) => setContraseña(e.target.value)}
-                    placeholder="Ingresar contraseña"
-                    toggleMask
-                    style={{ width: '100%' }}
-                />
-            </div>
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
-            {/* Ejecuta el login al hacer clic */}
-            <Button 
-                label="Acceder" 
-                icon="pi pi-sign-in" 
-                style={{ width: '100%' }}
-                onClick={handleLogin}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Usuario</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+              className="w-full border rounded px-3 py-2"
+              placeholder="Ingresa tu usuario"
             />
-        </div>
-    );
-};
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Contraseña</label>
+            <input
+              type="password"
+              value={contraseña}
+              onChange={(e) => setContraseña(e.target.value)}
+              required
+              className="w-full border rounded px-3 py-2"
+              placeholder="Ingresa tu contraseña"
+            />
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={cargando}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
+          >
+            {cargando ? "Iniciando..." : "Ingresar"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 export default Login;
-
-
