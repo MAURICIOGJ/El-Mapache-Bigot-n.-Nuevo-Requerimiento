@@ -156,7 +156,7 @@ export const crearCita = async (
   serviciosSeleccionados: number[] = []
 ) => {
   try {
-    console.log("📝 ===== CREANDO CITA =====");
+    console.log(" ===== CREANDO CITA =====");
     console.log("Cliente:", clienteData);
     console.log("Cita:", citaData);
     console.log("ID Barbero:", idBarbero);
@@ -164,7 +164,7 @@ export const crearCita = async (
 
     const resCliente = await axios.post(API_CLIENTE, clienteData);
     const clienteCreado = resCliente.data;
-    console.log("✅ Cliente creado:", clienteCreado);
+    console.log(" Cliente creado:", clienteCreado);
 
     const citaDTO = {
       fecha: citaData.fecha,
@@ -174,14 +174,14 @@ export const crearCita = async (
       idServicios: serviciosSeleccionados
     };
 
-    console.log("📤 Enviando al backend:", citaDTO);
+    console.log(" Enviando al backend:", citaDTO);
 
     const resCita = await axios.post(API_CITA, citaDTO);
-    console.log("✅ Cita creada:", resCita.data);
+    console.log(" Cita creada:", resCita.data);
 
     return resCita.data;
   } catch (error: any) {
-    console.error("❌ ===== ERROR AL CREAR CITA =====");
+    console.error(" ===== ERROR AL CREAR CITA =====");
     console.error("Status:", error.response?.status);
     console.error("Data:", error.response?.data);
     console.error("Mensaje:", error.message);
@@ -195,7 +195,7 @@ export const actualizarCliente = async (idCliente: number, nombre: string, telef
     const res = await axios.put(`${API_CLIENTE}/${idCliente}`, clienteDTO);
     return res.data;
   } catch (error: any) {
-    console.error("❌ Error al actualizar el cliente:", error);
+    console.error(" Error al actualizar el cliente:", error);
     throw error;
   }
 };
@@ -224,10 +224,10 @@ export const actualizarCita = async (
     };
 
     const res = await axios.put(`${API_CITA}/${idCita}`, citaDTO);
-    console.log("✅ Cita actualizada");
+    console.log(" Cita actualizada");
     return res.data;
   } catch (error: any) {
-    console.error("❌ Error al actualizar la cita:", error);
+    console.error(" Error al actualizar la cita:", error);
     throw error;
   }
 };
@@ -236,9 +236,9 @@ export const actualizarCita = async (
 export const completarCita = async (idCita: number) => {
   try {
     await axios.put(`${API_CITA}/${idCita}/completar`);
-    console.log(`✅ Cita ${idCita} completada`);
+    console.log(` Cita ${idCita} completada`);
   } catch (error) {
-    console.error("❌ Error al completar cita:", error);
+    console.error(" Error al completar cita:", error);
     throw error;
   }
 };
@@ -249,9 +249,9 @@ export const cancelarCita = async (idCita: number, motivo: string) => {
     await axios.put(`${API_CITA}/${idCita}/cancelar`, motivo, {
       headers: { 'Content-Type': 'text/plain' }
     });
-    console.log(`✅ Cita ${idCita} cancelada`);
+    console.log(` Cita ${idCita} cancelada`);
   } catch (error) {
-    console.error("❌ Error al cancelar cita:", error);
+    console.error(" Error al cancelar cita:", error);
     throw error;
   }
 };
@@ -260,9 +260,9 @@ export const cancelarCita = async (idCita: number, motivo: string) => {
 export const eliminarCita = async (idCita: number) => {
   try {
     await axios.delete(`${API_CITA}/${idCita}`);
-    console.log(`✅ Cita ${idCita} eliminada permanentemente`);
+    console.log(` Cita ${idCita} eliminada permanentemente`);
   } catch (error: any) {
-    console.error("❌ Error al eliminar la cita:", error);
+    console.error(" Error al eliminar la cita:", error);
     throw error;
   }
 };

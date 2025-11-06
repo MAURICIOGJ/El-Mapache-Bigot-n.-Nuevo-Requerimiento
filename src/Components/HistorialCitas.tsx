@@ -74,9 +74,9 @@ function HistorialCitas() {
         <h1 className="text-3xl font-bold">Historial de Citas</h1>
         <button
           onClick={cargarHistorial}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded"
         >
-          🔄 Actualizar
+           Actualizar
         </button>
       </div>
 
@@ -85,11 +85,11 @@ function HistorialCitas() {
           onClick={() => setVistaActual("completadas")}
           className={`px-6 py-2 rounded-t-lg font-medium ${
             vistaActual === "completadas"
-              ? "bg-green-500 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              ? "bg-green-500 text-black"
+              : "bg-gray-200 text-black -700 hover:bg-black-300"
           }`}
         >
-          ✅ Completadas ({citasCompletadas.length})
+           Completadas ({citasCompletadas.length})
         </button>
         <button
           onClick={() => setVistaActual("canceladas")}
@@ -99,7 +99,7 @@ function HistorialCitas() {
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
           }`}
         >
-          ❌ Canceladas ({citasCanceladas.length})
+           Canceladas ({citasCanceladas.length})
         </button>
       </div>
 

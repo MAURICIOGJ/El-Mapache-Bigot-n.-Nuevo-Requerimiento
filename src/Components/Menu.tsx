@@ -15,7 +15,7 @@ function Menu({ onLogout }: MenuProps) {
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-gray-800 text-white flex flex-col">
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-2xl font-bold">🧔 Mapache Bigotón</h1>
+        <h1 className="text-2xl font-bold"> Mapache Bigotón</h1>
         <p className="text-sm text-gray-400">Sistema de Citas</p>
       </div>
 
@@ -26,7 +26,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-              🏠 Inicio
+               Inicio
             </Link>
           </li>
           <li>
@@ -34,7 +34,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/citas"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-              📅 Citas Programadas
+               Citas Programadas
             </Link>
           </li>
           <li>
@@ -42,7 +42,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/historial"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-              📋 Historial de Citas
+               Historial de Citas
             </Link>
           </li>
           <li>
@@ -50,7 +50,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/usuarios"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-              👥 Usuarios (Barberos)
+               Usuarios (Barberos)
             </Link>
           </li>
           <li>
@@ -58,7 +58,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/servicios"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-              ✂️ Servicios
+              ️ Servicios
             </Link>
           </li>
         </ul>
@@ -69,7 +69,7 @@ function Menu({ onLogout }: MenuProps) {
           onClick={handleLogout}
           className="w-full bg-red-500 hover:bg-red-600 px-4 py-3 rounded transition"
         >
-          🚪 Cerrar Sesión
+           Cerrar Sesión
         </button>
       </div>
     </div>

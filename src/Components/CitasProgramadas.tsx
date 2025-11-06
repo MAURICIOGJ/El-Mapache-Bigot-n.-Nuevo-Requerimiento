@@ -142,13 +142,13 @@ function CitasProgramadas() {
           nombre,
           telefono
         );
-        alert("✅ Cita actualizada exitosamente");
+        alert(" Cita actualizada exitosamente");
       } else {
         const clienteData = { nombre: nombre.trim(), telefono: telefono.trim() };
         const citaData = { fecha, hora };
 
         await crearCita(clienteData, citaData, barberoSeleccionado, serviciosSeleccionados);
-        alert("✅ Cita creada exitosamente");
+        alert(" Cita creada exitosamente");
       }
 
       cerrarModal();
@@ -156,7 +156,7 @@ function CitasProgramadas() {
     } catch (error: any) {
       console.error("Error en handleSubmit:", error);
 
-      let mensajeError = "❌ Error al guardar la cita.\n";
+      let mensajeError = " Error al guardar la cita.\n";
 
       if (error.response?.status === 500) {
         mensajeError += "Error del servidor. Verifica que:\n";
@@ -190,12 +190,12 @@ function CitasProgramadas() {
 
     try {
       await completarCita(citaAEliminar);
-      alert("✅ Cita marcada como completada");
+      alert(" Cita marcada como completada");
       cerrarModalEliminar();
       await cargarDatos();
     } catch (error) {
       console.error("Error completando cita:", error);
-      alert("❌ Error al completar la cita");
+      alert(" Error al completar la cita");
     }
   };
 
@@ -209,12 +209,12 @@ function CitasProgramadas() {
 
     try {
       await cancelarCita(citaAEliminar, motivoCancelacion.trim());
-      alert("✅ Cita cancelada");
+      alert(" Cita cancelada");
       cerrarModalEliminar();
       await cargarDatos();
     } catch (error) {
       console.error("Error cancelando cita:", error);
-      alert("❌ Error al cancelar la cita");
+      alert(" Error al cancelar la cita");
     }
   };
 
@@ -224,7 +224,7 @@ function CitasProgramadas() {
         <h1 className="text-3xl font-bold">Citas Programadas</h1>
         <button
           onClick={abrirModalNuevo}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg"
+          className="bg-blue-500 hover:bg-blue-600 text-black px-6 py-2 rounded-lg"
         >
           + Nueva Cita
         </button>
@@ -259,13 +259,13 @@ function CitasProgramadas() {
                 <td className="px-4 py-3 text-center">
                   <button
                     onClick={() => abrirModalEditar(cita)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mr-2"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-green px-3 py-1 rounded mr-2"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => abrirModalEliminar(cita.idCita)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-red px-3 py-1 rounded"
                   >
                     Eliminar
                   </button>
@@ -396,7 +396,7 @@ function CitasProgramadas() {
                 onClick={handleCompletarCita}
                 className="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium"
               >
-                ✅ Marcar como Completada
+                Marcar como Completada
               </button>
 
               <div className="border-t pt-4">
@@ -412,7 +412,7 @@ function CitasProgramadas() {
                   onClick={handleCancelarCita}
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium"
                 >
-                  ❌ Cancelar con Motivo
+                   Cancelar con Motivo
                 </button>
               </div>
 
