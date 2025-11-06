@@ -31,7 +31,7 @@ function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-96">
         <h1 className="text-3xl font-bold text-center mb-6">
-          🧔 Mapache Bigotón
+           Mapache Bigotón
         </h1>
         <h2 className="text-xl text-center mb-6 text-gray-600">
           Iniciar Sesión
@@ -71,7 +71,7 @@ function Login({ onLogin }: LoginProps) {
           <button
             type="submit"
             disabled={cargando}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-black py-2 rounded disabled:bg-gray-400"
           >
             {cargando ? "Iniciando..." : "Ingresar"}
           </button>

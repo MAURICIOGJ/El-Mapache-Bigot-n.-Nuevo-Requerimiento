@@ -13,10 +13,10 @@ function Menu({ onLogout }: MenuProps) {
   };
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-64 bg-gray-800 text-white flex flex-col">
+    <div className="fixed left-0 top-0 h-screen w-64 bg-gray-800 text-block flex flex-col">
       <div className="p-6 border-b border-gray-700">
         <h1 className="text-2xl font-bold"> Mapache Bigotón</h1>
-        <p className="text-sm text-gray-400">Sistema de Citas</p>
+        <p className="text-sm text-block-400">Sistema de Citas</p>
       </div>
 
       <nav className="flex-1 p-4">
