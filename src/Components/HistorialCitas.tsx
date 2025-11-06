@@ -1,269 +1,203 @@
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { obtenerCitasCompletadas, obtenerCitasCanceladas } from "../Services/CitasService";
 
-const API_CLIENTE = "http://localhost:8080/cliente";
-const API_SERVICIO = "http://localhost:8080/servicio";
-const API_CITA = "http://localhost:8080/cita";
-const API_USUARIO = "http://localhost:8080/usuario";
+interface CitaCompletada {
+  idCita: number;
+  nombre: string;
+  telefono: string;
+  barbero: string;
+  fecha: string;
+  hora: string;
+  fechaCompletada: string;
+  servicios: string[];
+  precioTotal: number;
+}
 
-// --- FUNCIÓN DE LECTURA - CITAS PROGRAMADAS ORDENADAS ---
-export const obtenerCitasProgramadas = async () => {
-  try {
-    const resCitas = await axios.get(API_CITA);
+interface CitaCancelada {
+  idCita: number;
+  nombre: string;
+  telefono: string;
+  barbero: string;
+  fecha: string;
+  hora: string;
+  fechaCancelada: string;
+  motivoCancelacion: string;
+}
 
-    const citasProgramadas = await Promise.all(
-      resCitas.data.map(async (cita: any) => {
-        const nombreCliente = cita.cliente?.nombre || "N/A";
-        const telefonoCliente = cita.cliente?.telefono || "N/A";
-        const nombreBarbero = cita.usuario?.nombre || "N/A";
+function HistorialCitas() {
+  const [citasCompletadas, setCitasCompletadas] = useState<CitaCompletada[]>([]);
+  const [citasCanceladas, setCitasCanceladas] = useState<CitaCancelada[]>([]);
+  const [vistaActual, setVistaActual] = useState<"completadas" | "canceladas">("completadas");
+  const [cargando, setCargando] = useState(false);
 
-        let servicios: string[] = [];
-        let precios: number[] = [];
-        let precioTotal = 0;
+  useEffect(() => {
+    cargarHistorial();
+  }, []);
 
-        try {
-          const resServicios = await axios.get(`${API_CITA}/servicios/${cita.idCita}`);
-          if (resServicios.data && Array.isArray(resServicios.data)) {
-            servicios = resServicios.data.map((cs: any) => cs.servicio?.descripcion || "N/A");
-            precios = resServicios.data.map((cs: any) => cs.servicio?.costo || 0);
-            precioTotal = precios.reduce((sum, precio) => sum + precio, 0);
-          }
-        } catch (error) {
-          console.error(`Error obteniendo servicios de cita ${cita.idCita}:`, error);
-        }
-
-        return {
-          idCita: cita.idCita,
-          nombre: nombreCliente,
-          telefono: telefonoCliente,
-          barbero: nombreBarbero,
-          fecha: cita.fecha,
-          hora: cita.hora,
-          estado: cita.estado,
-          servicios,
-          precios,
-          precioTotal,
-          idCliente: cita.cliente?.idCliente,
-          idUsuario: cita.usuario?.idUsuario
-        };
-      })
-    );
-
-    return citasProgramadas;
-  } catch (error) {
-    console.error("Error obteniendo citas programadas:", error);
-    return [];
-  }
-};
-
-// --- FUNCIÓN PARA OBTENER HISTORIAL DE CITAS COMPLETADAS ---
-export const obtenerCitasCompletadas = async () => {
-  try {
-    const resCitas = await axios.get(`${API_CITA}/completadas`);
-
-    const citasCompletadas = await Promise.all(
-      resCitas.data.map(async (cita: any) => {
-        const nombreCliente = cita.cliente?.nombre || "N/A";
-        const telefonoCliente = cita.cliente?.telefono || "N/A";
-        const nombreBarbero = cita.usuario?.nombre || "N/A";
-
-        let servicios: string[] = [];
-        let precioTotal = 0;
-
-        try {
-          const resServicios = await axios.get(`${API_CITA}/servicios/${cita.idCita}`);
-          if (resServicios.data && Array.isArray(resServicios.data)) {
-            servicios = resServicios.data.map((cs: any) => cs.servicio?.descripcion || "N/A");
-            const precios = resServicios.data.map((cs: any) => cs.servicio?.costo || 0);
-            precioTotal = precios.reduce((sum, precio) => sum + precio, 0);
-          }
-        } catch (error) {
-          console.error(`Error obteniendo servicios:`, error);
-        }
-
-        return {
-          idCita: cita.idCita,
-          nombre: nombreCliente,
-          telefono: telefonoCliente,
-          barbero: nombreBarbero,
-          fecha: cita.fecha,
-          hora: cita.hora,
-          fechaCompletada: cita.fechaCompletada,
-          servicios,
-          precioTotal,
-          idCliente: cita.cliente?.idCliente
-        };
-      })
-    );
-
-    return citasCompletadas;
-  } catch (error) {
-    console.error("Error obteniendo citas completadas:", error);
-    return [];
-  }
-};
-
-// --- FUNCIÓN PARA OBTENER CITAS CANCELADAS ---
-export const obtenerCitasCanceladas = async () => {
-  try {
-    const resCitas = await axios.get(`${API_CITA}/canceladas`);
-
-    const citasCanceladas = await Promise.all(
-      resCitas.data.map(async (cita: any) => {
-        return {
-          idCita: cita.idCita,
-          nombre: cita.cliente?.nombre || "N/A",
-          telefono: cita.cliente?.telefono || "N/A",
-          barbero: cita.usuario?.nombre || "N/A",
-          fecha: cita.fecha,
-          hora: cita.hora,
-          fechaCancelada: cita.fechaCompletada,
-          motivoCancelacion: cita.motivoCancelacion || "Sin motivo"
-        };
-      })
-    );
-
-    return citasCanceladas;
-  } catch (error) {
-    console.error("Error obteniendo citas canceladas:", error);
-    return [];
-  }
-};
-
-export const obtenerServicios = async () => {
-  try {
-    const resServicios = await axios.get(API_SERVICIO);
-    return resServicios.data;
-  } catch (error) {
-    console.error("Error obteniendo servicios:", error);
-    return [];
-  }
-};
-
-export const obtenerBarberos = async () => {
-  try {
-    const resBarberos = await axios.get(API_USUARIO);
-    return resBarberos.data;
-  } catch (error) {
-    console.error("Error obteniendo barberos:", error);
-    return [];
-  }
-};
-
-export const crearCita = async (
-  clienteData: any,
-  citaData: any,
-  idBarbero: number,
-  serviciosSeleccionados: number[] = []
-) => {
-  try {
-    const resCliente = await axios.post(API_CLIENTE, clienteData);
-    const clienteCreado = resCliente.data;
-
-    const citaDTO = {
-      fecha: citaData.fecha,
-      hora: citaData.hora,
-      idCliente: clienteCreado.idCliente,
-      idUsuario: idBarbero,
-      idServicios: serviciosSeleccionados
-    };
-
-    const resCita = await axios.post(API_CITA, citaDTO);
-    console.log("✅ Cita creada");
-    return resCita.data;
-  } catch (error: any) {
-    console.error("❌ Error al crear la cita:", error);
-    throw error;
-  }
-};
-
-export const actualizarCliente = async (idCliente: number, nombre: string, telefono: string) => {
-  try {
-    const clienteDTO = { nombre: nombre.trim(), telefono: telefono.trim() };
-    const res = await axios.put(`${API_CLIENTE}/${idCliente}`, clienteDTO);
-    return res.data;
-  } catch (error: any) {
-    console.error("❌ Error al actualizar el cliente:", error);
-    throw error;
-  }
-};
-
-export const actualizarCita = async (
-  idCita: number,
-  fecha: string,
-  hora: string,
-  idCliente: number,
-  idBarbero: number,
-  serviciosSeleccionados: number[] = [],
-  nombreCliente?: string,
-  telefonoCliente?: string
-) => {
-  try {
-    if (nombreCliente && telefonoCliente && idCliente) {
-      await actualizarCliente(idCliente, nombreCliente, telefonoCliente);
+  const cargarHistorial = async () => {
+    setCargando(true);
+    try {
+      const [completadas, canceladas] = await Promise.all([
+        obtenerCitasCompletadas(),
+        obtenerCitasCanceladas(),
+      ]);
+      setCitasCompletadas(completadas);
+      setCitasCanceladas(canceladas);
+      console.log("Completadas:", completadas);
+      console.log("Canceladas:", canceladas);
+    } catch (error) {
+      console.error("Error cargando historial:", error);
+    } finally {
+      setCargando(false);
     }
+  };
 
-    const citaDTO = {
-      fecha,
-      hora,
-      idCliente,
-      idUsuario: idBarbero,
-      idServicios: serviciosSeleccionados
-    };
+  const formatearFecha = (fechaISO: string) => {
+    if (!fechaISO) return "N/A";
+    try {
+      const fecha = new Date(fechaISO);
+      return fecha.toLocaleDateString("es-MX", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch {
+      return fechaISO;
+    }
+  };
 
-    const res = await axios.put(`${API_CITA}/${idCita}`, citaDTO);
-    console.log("✅ Cita actualizada");
-    return res.data;
-  } catch (error: any) {
-    console.error("❌ Error al actualizar la cita:", error);
-    throw error;
-  }
-};
+  return (
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Historial de Citas</h1>
+        <button
+          onClick={cargarHistorial}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          🔄 Actualizar
+        </button>
+      </div>
 
-// --- MARCAR CITA COMO COMPLETADA ---
-export const completarCita = async (idCita: number) => {
-  try {
-    await axios.put(`${API_CITA}/${idCita}/completar`);
-    console.log(`✅ Cita ${idCita} completada`);
-  } catch (error) {
-    console.error("❌ Error al completar cita:", error);
-    throw error;
-  }
-};
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setVistaActual("completadas")}
+          className={`px-6 py-2 rounded-t-lg font-medium ${
+            vistaActual === "completadas"
+              ? "bg-green-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          ✅ Completadas ({citasCompletadas.length})
+        </button>
+        <button
+          onClick={() => setVistaActual("canceladas")}
+          className={`px-6 py-2 rounded-t-lg font-medium ${
+            vistaActual === "canceladas"
+              ? "bg-red-500 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          ❌ Canceladas ({citasCanceladas.length})
+        </button>
+      </div>
 
-// --- MARCAR CITA COMO CANCELADA ---
-export const cancelarCita = async (idCita: number, motivo: string) => {
-  try {
-    await axios.put(`${API_CITA}/${idCita}/cancelar`, motivo, {
-      headers: { 'Content-Type': 'text/plain' }
-    });
-    console.log(`✅ Cita ${idCita} cancelada`);
-  } catch (error) {
-    console.error("❌ Error al cancelar cita:", error);
-    throw error;
-  }
-};
+      {cargando ? (
+        <div className="text-center py-8">Cargando...</div>
+      ) : (
+        <>
+          {vistaActual === "completadas" && (
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="min-w-full table-auto">
+                <thead className="bg-green-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Cliente</th>
+                    <th className="px-4 py-3 text-left">Teléfono</th>
+                    <th className="px-4 py-3 text-left">Barbero</th>
+                    <th className="px-4 py-3 text-left">Fecha Agendada</th>
+                    <th className="px-4 py-3 text-left">Hora</th>
+                    <th className="px-4 py-3 text-left">Servicios</th>
+                    <th className="px-4 py-3 text-right">Total</th>
+                    <th className="px-4 py-3 text-left">Completada el</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {citasCompletadas.map((cita) => (
+                    <tr key={cita.idCita} className="border-b hover:bg-green-50">
+                      <td className="px-4 py-3">{cita.nombre}</td>
+                      <td className="px-4 py-3">{cita.telefono}</td>
+                      <td className="px-4 py-3 font-medium text-blue-600">{cita.barbero}</td>
+                      <td className="px-4 py-3">{cita.fecha}</td>
+                      <td className="px-4 py-3">{cita.hora}</td>
+                      <td className="px-4 py-3">
+                        {cita.servicios.length > 0
+                          ? cita.servicios.join(", ")
+                          : "Sin servicios"}
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-green-600">
+                        ${cita.precioTotal.toFixed(2)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {formatearFecha(cita.fechaCompletada)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-// --- ELIMINAR PERMANENTEMENTE (ya no se usa normalmente) ---
-export const eliminarCita = async (idCita: number) => {
-  try {
-    await axios.delete(`${API_CITA}/${idCita}`);
-    console.log(`✅ Cita ${idCita} eliminada permanentemente`);
-  } catch (error: any) {
-    console.error("❌ Error al eliminar la cita:", error);
-    throw error;
-  }
-};
+              {citasCompletadas.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No hay citas completadas
+                </div>
+              )}
+            </div>
+          )}
 
-export default {
-  obtenerCitasProgramadas,
-  obtenerCitasCompletadas,
-  obtenerCitasCanceladas,
-  obtenerServicios,
-  obtenerBarberos,
-  crearCita,
-  actualizarCita,
-  completarCita,
-  cancelarCita,
-  eliminarCita,
-  actualizarCliente
-};
+          {vistaActual === "canceladas" && (
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="min-w-full table-auto">
+                <thead className="bg-red-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left">Cliente</th>
+                    <th className="px-4 py-3 text-left">Teléfono</th>
+                    <th className="px-4 py-3 text-left">Barbero</th>
+                    <th className="px-4 py-3 text-left">Fecha Agendada</th>
+                    <th className="px-4 py-3 text-left">Hora</th>
+                    <th className="px-4 py-3 text-left">Motivo Cancelación</th>
+                    <th className="px-4 py-3 text-left">Cancelada el</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {citasCanceladas.map((cita) => (
+                    <tr key={cita.idCita} className="border-b hover:bg-red-50">
+                      <td className="px-4 py-3">{cita.nombre}</td>
+                      <td className="px-4 py-3">{cita.telefono}</td>
+                      <td className="px-4 py-3 font-medium text-blue-600">{cita.barbero}</td>
+                      <td className="px-4 py-3">{cita.fecha}</td>
+                      <td className="px-4 py-3">{cita.hora}</td>
+                      <td className="px-4 py-3 text-red-600 italic">
+                        {cita.motivoCancelacion}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {formatearFecha(cita.fechaCancelada)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {citasCanceladas.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No hay citas canceladas
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+export default HistorialCitas;
