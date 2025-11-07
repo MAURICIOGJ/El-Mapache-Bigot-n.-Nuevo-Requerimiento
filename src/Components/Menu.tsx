@@ -50,7 +50,7 @@ function Menu({ onLogout }: MenuProps) {
               to="/usuarios"
               className="block px-4 py-3 rounded hover:bg-gray-700 transition"
             >
-               Usuarios (Barberos)
+               Barberos
             </Link>
           </li>
           <li>
@@ -61,8 +61,18 @@ function Menu({ onLogout }: MenuProps) {
               ️ Servicios
             </Link>
           </li>
+ <li>
+            <Link
+              to="/clientes"
+              className="block px-4 py-3 rounded hover:bg-gray-700 transition"
+            >
+              ️ Clientes
+            </Link>
+          </li>
+
         </ul>
       </nav>
+
 
       <div className="p-4 border-t border-gray-700">
         <button
